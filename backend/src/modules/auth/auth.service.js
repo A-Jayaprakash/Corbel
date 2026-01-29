@@ -1,9 +1,5 @@
 import { Owner } from "../../models/Owner.model";
-import {
-  hashPassword,
-  comparePassword,
-  hashPassword,
-} from "../../utils/password.util";
+import { hashPassword, comparePassword } from "../../utils/password.util";
 import { generateAccessToken } from "../../utils/token.util";
 
 /**
