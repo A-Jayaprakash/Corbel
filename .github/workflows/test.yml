@@ -66,23 +66,34 @@ jobs:
 
       - name: Comment PR with test results
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const coverage = JSON.parse(fs.readFileSync('backend/coverage/coverage-summary.json', 'utf8'));
-            const total = coverage.total;
             
-            const comment = `## 📊 Test Coverage Report
+            let comment = '## 📊 Test Results\n\n';
             
-            | Metric | Coverage |
-            |--------|----------|
-            | Lines | ${total.lines.pct}% |
-            | Statements | ${total.statements.pct}% |
-            | Functions | ${total.functions.pct}% |
-            | Branches | ${total.branches.pct}% |
+            // Check if coverage file exists and read it
+            const coveragePath = 'backend/coverage/coverage-summary.json';
+            if (fs.existsSync(coveragePath)) {
+              try {
+                const coverage = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
+                const total = coverage.total;
+                
+                comment += `### Coverage Report\n\n| Metric | Coverage |\n|--------|----------|\n`;
+                comment += `| Lines | ${total.lines.pct}% |\n`;
+                comment += `| Statements | ${total.statements.pct}% |\n`;
+                comment += `| Functions | ${total.functions.pct}% |\n`;
+                comment += `| Branches | ${total.branches.pct}% |\n\n`;
+              } catch (error) {
+                comment += `⚠️ Coverage report could not be parsed\n\n`;
+              }
+            } else {
+              comment += `⚠️ Coverage report not available\n\n`;
+            }
             
-            ✅ All tests passed!`;
+            comment += `✅ Test workflow completed!`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
