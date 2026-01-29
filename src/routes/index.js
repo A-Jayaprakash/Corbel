@@ -6,6 +6,7 @@ import unitRoutes from "../modules/unit/unit.routes.js";
 import tenantRoutes from "../modules/tenant/tenant.routes.js";
 import rentBillRoutes from "../modules/rent-bill/rent-bill.routes.js";
 import monthlyBillingRoutes from "../modules/billing/monthly-billing.routes.js";
+import paymentRoutes from "../modules/payment/payment.routes.js";
 
 const router = express.Router();
 
@@ -18,4 +19,5 @@ router.use("/", unitRoutes);
 router.use("/", tenantRoutes);
 router.use("/", rentBillRoutes);
 router.use("/billing", monthlyBillingRoutes);
+router.use("/", paymentRoutes);
 export default router;
