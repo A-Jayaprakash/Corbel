@@ -8,7 +8,7 @@ const SALT_ROUNDS = 12;
  * @returns {Promise<string>} hashed password
  */
 
-export const hashPassword = async (oassword) => {
+export const hashPassword = async (password) => {
   if (!password) {
     throw new Error("Password is required");
   }

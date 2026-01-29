@@ -1,0 +1,52 @@
+{
+  "name": "corbel-backend",
+  "version": "1.0.0",
+  "description": "Property Management System Backend - Production-grade REST API with comprehensive testing",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=unit --coverage",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=integration",
+    "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=e2e",
+    "test:all": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --testPathPattern='(unit|integration|e2e)'",
+    "lint": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "validate": "npm run lint && npm run test"
+  },
+  "keywords": [
+    "property-management",
+    "rental",
+    "billing",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
+  "author": "A-Jayaprakash",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "express": "^4.18.2",
+    "mongoose": "^7.6.0",
+    "dotenv": "^16.3.1",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "@types/jest": "^29.5.8",
+    "@types/supertest": "^2.0.12",
+    "jest-mock-extended": "^3.0.5",
+    "mongodb-memory-server": "^9.1.6",
+    "nodemon": "^3.0.1",
+    "eslint": "^8.54.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "prettier": "^3.1.0",
+    "babel-jest": "^29.7.0",
+    "@babel/preset-env": "^7.23.5"
+  }
+}
