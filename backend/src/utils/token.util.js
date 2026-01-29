@@ -1,36 +1,19 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
-
-if (!JWT_SECRET) {
-  throw new Error("JWT is not defined in environment variables");
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT is not defined in environment variables");
+  }
+  return secret;
 }
 
-/**
- *
- * @param {Object} payload
- * @returns {string} jwt
- */
-
 export const generateAccessToken = (payload) => {
-  if (!payload) {
-    throw new Error("Payload is not received");
-  }
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+  const JWT_SECRET = getJwtSecret();
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 };
 
-/**
- *
- * @param {string} token
- * @returns {Object} decoded payload
- */
-
 export const verifyAccessToken = (token) => {
-  if (!token) {
-    throw new Error("JWT is required for verification");
-  }
+  const JWT_SECRET = getJwtSecret();
   return jwt.verify(token, JWT_SECRET);
 };
