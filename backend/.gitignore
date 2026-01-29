@@ -28,3 +28,12 @@ yarn-error.log*
 # Temporary files
 tmp/
 temp/
+
+```
+# Uploaded files (don't commit actual uploads)
+uploads/documents/*
+!uploads/documents/.gitkeep
+
+# But keep the directory structure
+!uploads/documents/.gitkeep
+```

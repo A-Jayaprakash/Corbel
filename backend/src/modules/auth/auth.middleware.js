@@ -5,7 +5,9 @@ export const authMiddleware = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
-        error: "UNAUTHORIZED",
+        statusCode: 401,
+        message: "UNAUTHORIZED",
+        description: "Missing or invalid authorization header",
       });
     }
 
@@ -13,14 +15,18 @@ export const authMiddleware = (req, res, next) => {
     const decoded = verifyAccessToken(token);
 
     req.owner = {
-      id: decoded.owner._id,
+      id: decoded.owner_id || decoded.owner?._id,
       email: decoded.email,
     };
 
     next();
   } catch (error) {
     return res.status(401).json({
-      error: "UNAUTHORIZED",
+      statusCode: 401,
+      message: "UNAUTHORIZED",
+      description: "Invalid or expired token",
     });
   }
 };
+
+export const authenticateOwner = authMiddleware;
