@@ -30,3 +30,4 @@ export const authMiddleware = (req, res, next) => {
 };
 
 export const authenticateOwner = authMiddleware;
+export const authenticateOwner = authMiddleware;
