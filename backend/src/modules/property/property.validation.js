@@ -16,7 +16,5 @@ export const createPropertyRules = [
 ];
 
 export const propertyIdRules = [
-  param("propertyId")
-    .isMongoId()
-    .withMessage("Invalid property ID"),
+  param("propertyId").isMongoId().withMessage("Invalid property ID"),
 ];

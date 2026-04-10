@@ -1,9 +1,7 @@
 import { body, param } from "express-validator";
 
 export const recordPaymentRules = [
-  param("rentBillId")
-    .isMongoId()
-    .withMessage("Invalid rent bill ID"),
+  param("rentBillId").isMongoId().withMessage("Invalid rent bill ID"),
 
   body("amount")
     .notEmpty()
@@ -31,13 +29,9 @@ export const recordPaymentRules = [
 ];
 
 export const paymentParamRules = [
-  param("paymentId")
-    .isMongoId()
-    .withMessage("Invalid payment ID"),
+  param("paymentId").isMongoId().withMessage("Invalid payment ID"),
 ];
 
 export const rentBillParamRules = [
-  param("rentBillId")
-    .isMongoId()
-    .withMessage("Invalid rent bill ID"),
+  param("rentBillId").isMongoId().withMessage("Invalid rent bill ID"),
 ];

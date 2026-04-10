@@ -1,9 +1,7 @@
 import { body, param } from "express-validator";
 
 export const assignTenantRules = [
-  param("unitId")
-    .isMongoId()
-    .withMessage("Invalid unit ID"),
+  param("unitId").isMongoId().withMessage("Invalid unit ID"),
 
   body("name")
     .trim()
@@ -28,7 +26,5 @@ export const assignTenantRules = [
 ];
 
 export const unitIdRules = [
-  param("unitId")
-    .isMongoId()
-    .withMessage("Invalid unit ID"),
+  param("unitId").isMongoId().withMessage("Invalid unit ID"),
 ];

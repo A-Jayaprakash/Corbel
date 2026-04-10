@@ -1,9 +1,7 @@
 import { body, param } from "express-validator";
 
 export const createRentBillRules = [
-  param("unitId")
-    .isMongoId()
-    .withMessage("Invalid unit ID"),
+  param("unitId").isMongoId().withMessage("Invalid unit ID"),
 
   body("billingMonth")
     .notEmpty()
@@ -19,15 +17,11 @@ export const createRentBillRules = [
 ];
 
 export const rentBillParamRules = [
-  param("rentBillId")
-    .isMongoId()
-    .withMessage("Invalid rent bill ID"),
+  param("rentBillId").isMongoId().withMessage("Invalid rent bill ID"),
 ];
 
 export const monthParamRules = [
-  param("unitId")
-    .isMongoId()
-    .withMessage("Invalid unit ID"),
+  param("unitId").isMongoId().withMessage("Invalid unit ID"),
 
   param("month")
     .matches(/^\d{4}-(0[1-9]|1[0-2])$/)

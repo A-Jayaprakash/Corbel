@@ -30,7 +30,9 @@ export const registerRules = [
     .optional()
     .trim()
     .matches(/^\+?[0-9]{7,15}$/)
-    .withMessage("Mobile number must be 7–15 digits, optionally prefixed with +"),
+    .withMessage(
+      "Mobile number must be 7–15 digits, optionally prefixed with +",
+    ),
 ];
 
 export const loginRules = [

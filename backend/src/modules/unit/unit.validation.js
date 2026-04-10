@@ -1,9 +1,7 @@
 import { body, param } from "express-validator";
 
 export const createUnitRules = [
-  param("propertyId")
-    .isMongoId()
-    .withMessage("Invalid property ID"),
+  param("propertyId").isMongoId().withMessage("Invalid property ID"),
 
   body("unitName")
     .trim()
@@ -26,7 +24,5 @@ export const createUnitRules = [
 ];
 
 export const unitIdRules = [
-  param("unitId")
-    .isMongoId()
-    .withMessage("Invalid unit ID"),
+  param("unitId").isMongoId().withMessage("Invalid unit ID"),
 ];
