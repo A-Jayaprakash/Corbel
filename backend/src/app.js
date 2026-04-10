@@ -2,6 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import morgan from "morgan";
 import routes from "./routes/index.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 
@@ -20,6 +21,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+
+// ── Request logging ───────────────────────────────────────────────────────────
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 // ── Global rate limit (100 req / 15 min per IP) ───────────────────────────────
 app.use(
