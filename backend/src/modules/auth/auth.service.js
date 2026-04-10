@@ -1,11 +1,11 @@
-import { Owner } from "../../models/Owner.model";
-import { hashPassword, comparePassword } from "../../utils/password.util";
-import { generateAccessToken } from "../../utils/token.util";
+import { Owner } from "../../models/Owner.model.js";
+import { hashPassword, comparePassword } from "../../utils/password.util.js";
+import { generateAccessToken } from "../../utils/token.util.js";
 
 /**
- *
+ * Register a new property owner
  * @param {Object} payload
- * @returns {Object}
+ * @returns {Object} { id, email }
  */
 export const registerOwner = async ({
   name,
@@ -23,13 +23,13 @@ export const registerOwner = async ({
     };
   }
 
-  const hashPassword = await hashPassword(password);
+  const passwordHash = await hashPassword(password);
 
   const owner = await Owner.create({
     name,
     email: normalizedEmail,
     mobileNumber,
-    hashPassword,
+    passwordHash,
   });
 
   return {
@@ -39,15 +39,14 @@ export const registerOwner = async ({
 };
 
 /**
- *
+ * Login an owner and return a JWT
  * @param {Object} param0
- * @returns {Object}
+ * @returns {Object} { accessToken, expiresIn }
  */
-
 export const loginOwner = async ({ email, password }) => {
   const normalizedEmail = email.toLowerCase();
   const owner = await Owner.findOne({ email: normalizedEmail }).select(
-    "+hashPassword",
+    "+passwordHash",
   );
 
   if (!owner) {
@@ -57,7 +56,7 @@ export const loginOwner = async ({ email, password }) => {
     };
   }
 
-  const isPasswordValid = await comparePassword(password, owner.hashPassword);
+  const isPasswordValid = await comparePassword(password, owner.passwordHash);
 
   if (!isPasswordValid) {
     throw {

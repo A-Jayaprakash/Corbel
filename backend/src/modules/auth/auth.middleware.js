@@ -1,4 +1,4 @@
-import { verifyAccessToken } from "../../utils/token.util";
+import { verifyAccessToken } from "../../utils/token.util.js";
 
 export const authMiddleware = (req, res, next) => {
   try {

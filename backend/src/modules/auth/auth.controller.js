@@ -1,4 +1,4 @@
-import { registerOwner, loginOwner } from "../auth/auth.service";
+import { registerOwner, loginOwner } from "./auth.service.js";
 
 export const registerOwnerController = async (req, res, next) => {
   try {
@@ -30,9 +30,9 @@ export const loginOwnerController = async (req, res, next) => {
     });
 
     return res.status(200).json({
-      access_token: result.access_token,
+      access_token: result.accessToken,
       token_type: "Bearer",
-      expires_in: result.expires_in,
+      expires_in: result.expiresIn,
     });
   } catch (error) {
     next(error);
