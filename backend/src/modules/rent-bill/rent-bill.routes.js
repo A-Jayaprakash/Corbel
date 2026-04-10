@@ -6,24 +6,30 @@ import {
   markRentBillAsPaidController,
 } from "./rent-bill.controller.js";
 import { authMiddleware } from "../auth/auth.middleware.js";
+import {
+  createRentBillRules,
+  rentBillParamRules,
+  monthParamRules,
+} from "./rent-bill.validation.js";
+import { validate } from "../../middleware/validate.middleware.js";
 
 const router = express.Router();
 
 /**
- * @route   POST /api/v1/units/:unitId/rent-bills
- * @desc    Create rent bill for unit + month (idempotent)
- * @access  Protected
+ * @route POST /api/v1/units/:unitId/rent-bills
+ * @access Protected
  */
 router.post(
   "/units/:unitId/rent-bills",
   authMiddleware,
+  createRentBillRules,
+  validate,
   createRentBillController,
 );
 
 /**
- * @route   GET /api/v1/units/:unitId/rent-bills
- * @desc    Get all rent bills for a unit
- * @access  Protected
+ * @route GET /api/v1/units/:unitId/rent-bills
+ * @access Protected
  */
 router.get(
   "/units/:unitId/rent-bills",
@@ -32,24 +38,26 @@ router.get(
 );
 
 /**
- * @route   GET /api/v1/units/:unitId/rent-bills/:month
- * @desc    Get rent bill for a specific month (YYYY-MM)
- * @access  Protected
+ * @route GET /api/v1/units/:unitId/rent-bills/:month
+ * @access Protected
  */
 router.get(
   "/units/:unitId/rent-bills/:month",
   authMiddleware,
+  monthParamRules,
+  validate,
   getRentBillByMonthController,
 );
 
 /**
- * @route   POST /api/v1/rent-bills/:rentBillId/pay
- * @desc    Mark rent bill as paid
- * @access  Protected
+ * @route POST /api/v1/rent-bills/:rentBillId/pay
+ * @access Protected
  */
 router.post(
   "/rent-bills/:rentBillId/pay",
   authMiddleware,
+  rentBillParamRules,
+  validate,
   markRentBillAsPaidController,
 );
 

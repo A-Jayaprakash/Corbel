@@ -5,28 +5,39 @@ import {
   deletePropertyController,
 } from "./property.controller.js";
 import { authMiddleware } from "../auth/auth.middleware.js";
+import { createPropertyRules, propertyIdRules } from "./property.validation.js";
+import { validate } from "../../middleware/validate.middleware.js";
 
 const router = express.Router();
 
 /**
- * @route   POST /api/v1/properties
- * @desc    Create a new property
- * @access  Protected
+ * @route POST /api/v1/properties
+ * @access Protected
  */
-router.post("/", authMiddleware, createPropertyController);
+router.post(
+  "/",
+  authMiddleware,
+  createPropertyRules,
+  validate,
+  createPropertyController,
+);
 
 /**
- * @route   GET /api/v1/properties
- * @desc    Get all properties for logged-in owner
- * @access  Protected
+ * @route GET /api/v1/properties
+ * @access Protected
  */
 router.get("/", authMiddleware, getPropertiesController);
 
 /**
- * @route   DELETE /api/v1/properties/:propertyId
- * @desc    Delete property (only if no units exist)
- * @access  Protected
+ * @route DELETE /api/v1/properties/:propertyId
+ * @access Protected
  */
-router.delete("/:propertyId", authMiddleware, deletePropertyController);
+router.delete(
+  "/:propertyId",
+  authMiddleware,
+  propertyIdRules,
+  validate,
+  deletePropertyController,
+);
 
 export default router;
