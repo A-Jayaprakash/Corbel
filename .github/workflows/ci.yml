@@ -92,7 +92,7 @@ jobs:
         run: npm run test:unit -- --coverage --ci
         env:
           NODE_ENV: test
-          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-do-not-use' }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET != '' && secrets.JWT_SECRET || 'ci-test-secret-do-not-use' }}
 
       - name: Upload coverage
         if: matrix.node-version == '20.x'
@@ -133,7 +133,7 @@ jobs:
         run: npm run test:integration -- --ci
         env:
           NODE_ENV: test
-          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-do-not-use' }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET != '' && secrets.JWT_SECRET || 'ci-test-secret-do-not-use' }}
 
   # ── 5. PR summary comment ──────────────────────────────────────────────────
   pr-summary:
@@ -162,7 +162,7 @@ jobs:
             const fs = require('fs');
             const unit = process.env.UNIT_RESULT;
             const integration = process.env.INTEGRATION_RESULT;
-            const icon = (r) => r === 'success' ? '✅' : r === 'skipped' ? '⏭️' : '❌';
+            const icon = (r) => r === 'success' ? ':white_check_mark:' : r === 'skipped' ? ':next_track_button:' : ':x:';
 
             let body = `## CI Results\n\n`;
             body += `| Job | Status |\n|-----|--------|\n`;
