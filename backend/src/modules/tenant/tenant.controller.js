@@ -1,26 +1,20 @@
 import {
   assignTenantToUnit,
   getActiveTenantForUnit,
+  updateTenant,
   removeTenantFromUnit,
 } from "./tenant.service.js";
 
-/**
- * Assign Tenant to Unit Controller
- */
 export const assignTenantToUnitController = async (req, res, next) => {
   try {
-    const ownerId = req.owner.id;
-    const { unitId } = req.params;
     const { name, phone, email } = req.body;
-
     const tenant = await assignTenantToUnit({
-      ownerId,
-      unitId,
+      ownerId: req.owner.id,
+      unitId: req.params.unitId,
       name,
       phone,
       email,
     });
-
     return res.status(201).json({
       id: tenant._id,
       name: tenant.name,
@@ -34,23 +28,13 @@ export const assignTenantToUnitController = async (req, res, next) => {
   }
 };
 
-/**
- * Get Active Tenant for Unit Controller
- */
 export const getActiveTenantForUnitController = async (req, res, next) => {
   try {
-    const ownerId = req.owner.id;
-    const { unitId } = req.params;
-
     const tenant = await getActiveTenantForUnit({
-      ownerId,
-      unitId,
+      ownerId: req.owner.id,
+      unitId: req.params.unitId,
     });
-
-    if (!tenant) {
-      return res.status(200).json(null);
-    }
-
+    if (!tenant) return res.status(200).json(null);
     return res.status(200).json({
       id: tenant._id,
       name: tenant.name,
@@ -64,22 +48,35 @@ export const getActiveTenantForUnitController = async (req, res, next) => {
   }
 };
 
-/**
- * Remove (Exit) Tenant from Unit Controller
- */
+export const updateTenantController = async (req, res, next) => {
+  try {
+    const { name, phone, email } = req.body;
+    const tenant = await updateTenant({
+      ownerId: req.owner.id,
+      unitId: req.params.unitId,
+      name,
+      phone,
+      email,
+    });
+    return res.status(200).json({
+      id: tenant._id,
+      name: tenant.name,
+      phone: tenant.phone,
+      email: tenant.email,
+      status: tenant.status,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const removeTenantFromUnitController = async (req, res, next) => {
   try {
-    const ownerId = req.owner.id;
-    const { unitId } = req.params;
-
     await removeTenantFromUnit({
-      ownerId,
-      unitId,
+      ownerId: req.owner.id,
+      unitId: req.params.unitId,
     });
-
-    return res.status(200).json({
-      message: "Tenant removed successfully",
-    });
+    return res.status(200).json({ message: "Tenant removed successfully" });
   } catch (error) {
     next(error);
   }

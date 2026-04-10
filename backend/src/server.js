@@ -3,11 +3,8 @@ import { dirname, resolve } from "path";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import app from "./app.js";
+import { startOverdueJob } from "./jobs/overdue.job.js";
 
-// Load .env from backend/ regardless of the cwd the process was launched from
-dotenv.config({
-  path: resolve(dirname(fileURLToPath(import.meta.url)), "../.env"),
-});
 dotenv.config({
   path: resolve(dirname(fileURLToPath(import.meta.url)), "../.env"),
 });
@@ -24,6 +21,7 @@ mongoose
   .connect(MONGODB_URI)
   .then(() => {
     console.log("Connected to MongoDB");
+    startOverdueJob();
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

@@ -25,6 +25,26 @@ export const assignTenantRules = [
     .normalizeEmail(),
 ];
 
+export const updateTenantRules = [
+  param("unitId").isMongoId().withMessage("Invalid unit ID"),
+  body("name")
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Name must be 2–100 characters"),
+  body("phone")
+    .optional()
+    .trim()
+    .matches(/^\+?[0-9]{7,15}$/)
+    .withMessage("Phone must be 7–15 digits"),
+  body("email")
+    .optional()
+    .trim()
+    .isEmail()
+    .withMessage("Must be a valid email address")
+    .normalizeEmail(),
+];
+
 export const unitIdRules = [
   param("unitId").isMongoId().withMessage("Invalid unit ID"),
 ];

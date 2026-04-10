@@ -23,6 +23,23 @@ export const createUnitRules = [
     .withMessage("Advance amount must be a non-negative number"),
 ];
 
+export const updateUnitRules = [
+  param("unitId").isMongoId().withMessage("Invalid unit ID"),
+  body("unitName")
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage("Unit name must be 1–100 characters"),
+  body("monthlyRent")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("Monthly rent must be a non-negative number"),
+  body("advanceAmount")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("Advance amount must be a non-negative number"),
+];
+
 export const unitIdRules = [
   param("unitId").isMongoId().withMessage("Invalid unit ID"),
 ];
