@@ -30,19 +30,24 @@ export const createUnitController = async (req, res, next) => {
 
 export const getUnitsByPropertyController = async (req, res, next) => {
   try {
-    const units = await getUnitsByProperty({
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const { data, meta } = await getUnitsByProperty({
       ownerId: req.owner.id,
       propertyId: req.params.propertyId,
+      page,
+      limit,
     });
-    return res.status(200).json(
-      units.map((u) => ({
+    return res.status(200).json({
+      data: data.map((u) => ({
         id: u._id,
         unitName: u.unitName,
         monthlyRent: u.monthlyRent,
         advanceAmount: u.advanceAmount,
         status: u.status,
       })),
-    );
+      meta,
+    });
   } catch (error) {
     next(error);
   }

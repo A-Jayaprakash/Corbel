@@ -63,16 +63,20 @@ describe("Unit Service", () => {
   describe("getUnitsByProperty", () => {
     it("should return units when property exists", async () => {
       Property.findOne.mockResolvedValueOnce({ _id: "prop1" });
-      Unit.find.mockReturnValueOnce({
-        sort: jest.fn().mockResolvedValueOnce([{ _id: "u1" }]),
-      });
+      const mockChain = { sort: jest.fn(), skip: jest.fn(), limit: jest.fn() };
+      mockChain.sort.mockReturnValue(mockChain);
+      mockChain.skip.mockReturnValue(mockChain);
+      mockChain.limit.mockResolvedValueOnce([{ _id: "u1" }]);
+      Unit.find.mockReturnValueOnce(mockChain);
+      Unit.countDocuments = jest.fn().mockResolvedValueOnce(1);
 
       const result = await getUnitsByProperty({
         ownerId: "o1",
         propertyId: "prop1",
       });
 
-      expect(result).toEqual([{ _id: "u1" }]);
+      expect(result.data).toEqual([{ _id: "u1" }]);
+      expect(result.meta.total).toBe(1);
     });
 
     it("should throw 404 when property not found", async () => {

@@ -1,4 +1,8 @@
-import { registerOwner, loginOwner } from "./auth.service.js";
+import {
+  registerOwner,
+  loginOwner,
+  refreshAccessToken,
+} from "./auth.service.js";
 
 export const registerOwnerController = async (req, res, next) => {
   try {
@@ -24,10 +28,23 @@ export const loginOwnerController = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const result = await loginOwner({
-      email,
-      password,
+    const result = await loginOwner({ email, password });
+
+    return res.status(200).json({
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+      token_type: "Bearer",
+      expires_in: result.expiresIn,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const refreshTokenController = async (req, res, next) => {
+  try {
+    const { refresh_token } = req.body;
+    const result = await refreshAccessToken({ refreshToken: refresh_token });
 
     return res.status(200).json({
       access_token: result.accessToken,

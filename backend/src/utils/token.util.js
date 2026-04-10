@@ -8,21 +8,25 @@ const getSecret = () => {
   return secret;
 };
 
-/**
- * Generate a signed JWT access token
- * @param {Object} payload - Data to embed (e.g. { owner_id, email })
- * @returns {string} Signed JWT
- */
+const getRefreshSecret = () => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET environment variable is not set");
+  }
+  return process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET + "_refresh";
+};
+
 export const generateAccessToken = (payload) => {
   return jwt.sign(payload, getSecret(), { expiresIn: "1h" });
 };
 
-/**
- * Verify and decode a JWT access token
- * @param {string} token
- * @returns {Object} Decoded payload
- * @throws if token is invalid or expired
- */
 export const verifyAccessToken = (token) => {
   return jwt.verify(token, getSecret());
+};
+
+export const generateRefreshToken = (payload) => {
+  return jwt.sign(payload, getRefreshSecret(), { expiresIn: "7d" });
+};
+
+export const verifyRefreshToken = (token) => {
+  return jwt.verify(token, getRefreshSecret());
 };

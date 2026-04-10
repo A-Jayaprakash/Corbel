@@ -26,14 +26,17 @@ export const createPropertyController = async (req, res, next) => {
 
 export const getPropertiesController = async (req, res, next) => {
   try {
-    const properties = await getPropertiesByOwner({ ownerId: req.owner.id });
-    return res.status(200).json(
-      properties.map((p) => ({
-        id: p._id,
-        name: p.name,
-        address: p.address,
-      })),
-    );
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const { data, meta } = await getPropertiesByOwner({
+      ownerId: req.owner.id,
+      page,
+      limit,
+    });
+    return res.status(200).json({
+      data: data.map((p) => ({ id: p._id, name: p.name, address: p.address })),
+      meta,
+    });
   } catch (error) {
     next(error);
   }
