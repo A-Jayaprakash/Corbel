@@ -21,11 +21,24 @@ export const createUnit = async ({
   });
 };
 
-export const getUnitsByProperty = async ({ ownerId, propertyId }) => {
+export const getUnitsByProperty = async ({
+  ownerId,
+  propertyId,
+  page = 1,
+  limit = 10,
+}) => {
   const property = await Property.findOne({ _id: propertyId, ownerId });
   if (!property) throw { statusCode: 404, message: "PROPERTY_NOT_FOUND" };
 
-  return Unit.find({ propertyId }).sort({ createdAt: -1 });
+  const skip = (page - 1) * limit;
+  const [data, total] = await Promise.all([
+    Unit.find({ propertyId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Unit.countDocuments({ propertyId }),
+  ]);
+  return {
+    data,
+    meta: { total, page, limit, pages: Math.ceil(total / limit) },
+  };
 };
 
 export const updateUnit = async ({

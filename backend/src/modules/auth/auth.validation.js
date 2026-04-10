@@ -46,3 +46,7 @@ export const loginRules = [
 
   body("password").notEmpty().withMessage("Password is required"),
 ];
+
+export const refreshRules = [
+  body("refresh_token").notEmpty().withMessage("refresh_token is required"),
+];

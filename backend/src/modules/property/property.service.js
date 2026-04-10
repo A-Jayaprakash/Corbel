@@ -6,8 +6,20 @@ export const createProperty = async ({ ownerId, name, address }) => {
   return property;
 };
 
-export const getPropertiesByOwner = async ({ ownerId }) => {
-  return Property.find({ ownerId }).sort({ createdAt: -1 });
+export const getPropertiesByOwner = async ({
+  ownerId,
+  page = 1,
+  limit = 10,
+}) => {
+  const skip = (page - 1) * limit;
+  const [data, total] = await Promise.all([
+    Property.find({ ownerId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Property.countDocuments({ ownerId }),
+  ]);
+  return {
+    data,
+    meta: { total, page, limit, pages: Math.ceil(total / limit) },
+  };
 };
 
 export const updateProperty = async ({

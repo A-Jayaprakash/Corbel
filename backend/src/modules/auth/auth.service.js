@@ -1,6 +1,10 @@
 import { Owner } from "../../models/Owner.model.js";
 import { hashPassword, comparePassword } from "../../utils/password.util.js";
-import { generateAccessToken } from "../../utils/token.util.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../../utils/token.util.js";
 
 /**
  * Register a new property owner
@@ -65,13 +69,32 @@ export const loginOwner = async ({ email, password }) => {
     };
   }
 
+  const payload = { owner_id: owner._id, email: owner.email };
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
+
+  return {
+    accessToken,
+    refreshToken,
+    expiresIn: 3600,
+  };
+};
+
+export const refreshAccessToken = async ({ refreshToken }) => {
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(refreshToken);
+  } catch {
+    throw { statusCode: 401, message: "INVALID_REFRESH_TOKEN" };
+  }
+
+  const owner = await Owner.findById(decoded.owner_id);
+  if (!owner) throw { statusCode: 401, message: "INVALID_REFRESH_TOKEN" };
+
   const accessToken = generateAccessToken({
     owner_id: owner._id,
     email: owner.email,
   });
 
-  return {
-    accessToken,
-    expiresIn: 3600,
-  };
+  return { accessToken, expiresIn: 3600 };
 };
