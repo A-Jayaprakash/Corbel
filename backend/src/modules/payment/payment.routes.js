@@ -5,39 +5,48 @@ import {
   getPaymentsForRentBillController,
 } from "./payment.controller.js";
 import { authMiddleware } from "../auth/auth.middleware.js";
+import {
+  recordPaymentRules,
+  paymentParamRules,
+  rentBillParamRules,
+} from "./payment.validation.js";
+import { validate } from "../../middleware/validate.middleware.js";
 
 const router = express.Router();
 
 /**
- * @route   POST /api/v1/rent-bills/:rentBillId/payments
- * @desc    Record a payment for a rent bill
- * @access  Protected
+ * @route POST /api/v1/rent-bills/:rentBillId/payments
+ * @access Protected
  */
 router.post(
   "/rent-bills/:rentBillId/payments",
   authMiddleware,
+  recordPaymentRules,
+  validate,
   recordPaymentController,
 );
 
 /**
- * @route   GET /api/v1/rent-bills/:rentBillId/payments
- * @desc    Get all payments for a rent bill
- * @access  Protected
+ * @route GET /api/v1/rent-bills/:rentBillId/payments
+ * @access Protected
  */
 router.get(
   "/rent-bills/:rentBillId/payments",
   authMiddleware,
+  rentBillParamRules,
+  validate,
   getPaymentsForRentBillController,
 );
 
 /**
- * @route   POST /api/v1/payments/:paymentId/verify
- * @desc    Verify a payment and mark rent bill as PAID
- * @access  Protected
+ * @route POST /api/v1/payments/:paymentId/verify
+ * @access Protected
  */
 router.post(
   "/payments/:paymentId/verify",
   authMiddleware,
+  paymentParamRules,
+  validate,
   verifyPaymentController,
 );
 
