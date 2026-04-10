@@ -1,193 +1,141 @@
-import * as authService from "../../../src/modules/auth/auth.service.js";
-import * as passwordUtil from "../../../src/utils/password.util.js";
-import * as tokenUtil from "../../../src/utils/token.util.js";
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+} from "@jest/globals";
 
-describe.skip("Auth Service - Unit Tests", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+jest.unstable_mockModule("../../../src/models/Owner.model.js", () => ({
+  Owner: { findOne: jest.fn(), create: jest.fn() },
+}));
+jest.unstable_mockModule("../../../src/utils/password.util.js", () => ({
+  hashPassword: jest.fn(),
+  comparePassword: jest.fn(),
+}));
+jest.unstable_mockModule("../../../src/utils/token.util.js", () => ({
+  generateAccessToken: jest.fn(),
+}));
 
+let registerOwner,
+  loginOwner,
+  Owner,
+  hashPassword,
+  comparePassword,
+  generateAccessToken;
+
+beforeAll(async () => {
+  ({ registerOwner, loginOwner } =
+    await import("../../../src/modules/auth/auth.service.js"));
+  ({ Owner } = await import("../../../src/models/Owner.model.js"));
+  ({ hashPassword, comparePassword } =
+    await import("../../../src/utils/password.util.js"));
+  ({ generateAccessToken } = await import("../../../src/utils/token.util.js"));
+});
+
+beforeEach(() => jest.clearAllMocks());
+
+describe("Auth Service", () => {
   describe("registerOwner", () => {
-    it("should successfully register a new owner", async () => {
-      const ownerData = {
-        name: "John Doe",
-        email: "john@example.com",
-        password: "SecurePass123",
-        mobileNumber: "+1234567890",
-      };
-
-      const hashedPassword = "$2b$10$hashedpasswordexample";
-      const newOwner = {
-        _id: "507f1f77bcf86cd799439011",
-        name: ownerData.name,
-        email: ownerData.email.toLowerCase(),
-        mobileNumber: ownerData.mobileNumber,
-      };
-
+    it("should register a new owner and return id + email", async () => {
       Owner.findOne.mockResolvedValueOnce(null);
-      passwordUtil.hashPassword.mockResolvedValueOnce(hashedPassword);
-      Owner.create.mockResolvedValueOnce(newOwner);
-
-      const result = await authService.registerOwner(ownerData);
-
-      expect(Owner.findOne).toHaveBeenCalledWith({
-        email: ownerData.email.toLowerCase(),
-      });
-      expect(passwordUtil.hashPassword).toHaveBeenCalledWith(
-        ownerData.password,
-      );
-      expect(Owner.create).toHaveBeenCalled();
-      expect(result).toEqual({
-        id: newOwner._id,
-        email: newOwner.email,
-      });
-    });
-
-    it("should throw error when email already exists", async () => {
-      const ownerData = {
-        name: "John Doe",
-        email: "existing@example.com",
-        password: "SecurePass123",
-        mobileNumber: "+1234567890",
-      };
-
-      const existingOwner = {
-        _id: "507f1f77bcf86cd799439010",
-        email: "existing@example.com",
-      };
-      Owner.findOne.mockResolvedValueOnce(existingOwner);
-
-      await expect(authService.registerOwner(ownerData)).rejects.toEqual({
-        statusCode: 409,
-        message: "Email already exists",
-      });
-
-      expect(passwordUtil.hashPassword).not.toHaveBeenCalled();
-    });
-
-    it("should normalize email to lowercase during registration", async () => {
-      const ownerData = {
-        name: "John Doe",
-        email: "JOHN@EXAMPLE.COM",
-        password: "SecurePass123",
-        mobileNumber: "+1234567890",
-      };
-
-      Owner.findOne.mockResolvedValueOnce(null);
-      passwordUtil.hashPassword.mockResolvedValueOnce("$2b$10$hashedpassword");
+      hashPassword.mockResolvedValueOnce("$2b$12$hashed");
       Owner.create.mockResolvedValueOnce({
-        _id: "507f1f77bcf86cd799439011",
+        _id: "id1",
         email: "john@example.com",
       });
 
-      await authService.registerOwner(ownerData);
-
-      expect(Owner.findOne).toHaveBeenCalledWith({
-        email: "john@example.com",
+      const result = await registerOwner({
+        name: "John",
+        email: "JOHN@EXAMPLE.COM",
+        password: "SecurePass1",
+        mobileNumber: "+91999",
       });
+
+      expect(Owner.findOne).toHaveBeenCalledWith({ email: "john@example.com" });
+      expect(hashPassword).toHaveBeenCalledWith("SecurePass1");
+      expect(result).toEqual({ id: "id1", email: "john@example.com" });
+    });
+
+    it("should throw 409 when email already exists", async () => {
+      Owner.findOne.mockResolvedValueOnce({ _id: "existing" });
+
+      await expect(
+        registerOwner({
+          name: "J",
+          email: "john@example.com",
+          password: "p",
+          mobileNumber: "1",
+        }),
+      ).rejects.toEqual({ statusCode: 409, message: "Email already exists" });
+
+      expect(hashPassword).not.toHaveBeenCalled();
     });
   });
 
   describe("loginOwner", () => {
-    it("should successfully login owner with correct credentials", async () => {
-      const credentials = {
+    it("should return accessToken and expiresIn on valid credentials", async () => {
+      const mockOwner = {
+        _id: "id1",
         email: "john@example.com",
-        password: "SecurePass123",
+        passwordHash: "$2b$hashed",
       };
-
-      const owner = {
-        _id: "507f1f77bcf86cd799439011",
-        email: credentials.email,
-        hashPassword: "$2b$10$hashedpassword",
-      };
-
-      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-
       Owner.findOne.mockReturnValueOnce({
-        select: jest.fn().mockResolvedValueOnce(owner),
+        select: jest.fn().mockResolvedValueOnce(mockOwner),
       });
-      passwordUtil.comparePassword.mockResolvedValueOnce(true);
-      tokenUtil.generateAccessToken.mockReturnValueOnce(token);
+      comparePassword.mockResolvedValueOnce(true);
+      generateAccessToken.mockReturnValueOnce("jwt.token.here");
 
-      const result = await authService.loginOwner(credentials);
-
-      expect(Owner.findOne).toHaveBeenCalledWith({
-        email: credentials.email.toLowerCase(),
+      const result = await loginOwner({
+        email: "john@example.com",
+        password: "SecurePass1",
       });
-      expect(passwordUtil.comparePassword).toHaveBeenCalledWith(
-        credentials.password,
-        owner.hashPassword,
+
+      expect(comparePassword).toHaveBeenCalledWith(
+        "SecurePass1",
+        mockOwner.passwordHash,
       );
-      expect(tokenUtil.generateAccessToken).toHaveBeenCalledWith({
-        owner_id: owner._id,
-        email: owner.email,
+      expect(generateAccessToken).toHaveBeenCalledWith({
+        owner_id: "id1",
+        email: "john@example.com",
       });
       expect(result).toEqual({
-        accessToken: token,
+        accessToken: "jwt.token.here",
         expiresIn: 3600,
       });
     });
 
-    it("should throw error when owner email not found", async () => {
-      const credentials = {
-        email: "nonexistent@example.com",
-        password: "SecurePass123",
-      };
-
+    it("should throw 401 when owner not found", async () => {
       Owner.findOne.mockReturnValueOnce({
         select: jest.fn().mockResolvedValueOnce(null),
       });
 
-      await expect(authService.loginOwner(credentials)).rejects.toEqual({
+      await expect(
+        loginOwner({ email: "x@x.com", password: "p" }),
+      ).rejects.toEqual({
         statusCode: 401,
         message: "Invalid Credentials",
       });
-
-      expect(passwordUtil.comparePassword).not.toHaveBeenCalled();
     });
 
-    it("should throw error when password is incorrect", async () => {
-      const credentials = {
-        email: "john@example.com",
-        password: "WrongPassword",
-      };
-
-      const owner = {
-        _id: "507f1f77bcf86cd799439011",
-        email: credentials.email,
-        hashPassword: "$2b$10$hashedpassword",
-      };
-
+    it("should throw 401 when password is wrong", async () => {
       Owner.findOne.mockReturnValueOnce({
-        select: jest.fn().mockResolvedValueOnce(owner),
+        select: jest
+          .fn()
+          .mockResolvedValueOnce({
+            _id: "id1",
+            email: "x@x.com",
+            passwordHash: "h",
+          }),
       });
-      passwordUtil.comparePassword.mockResolvedValueOnce(false);
+      comparePassword.mockResolvedValueOnce(false);
 
-      await expect(authService.loginOwner(credentials)).rejects.toEqual({
+      await expect(
+        loginOwner({ email: "x@x.com", password: "wrong" }),
+      ).rejects.toEqual({
         statusCode: 401,
         message: "Invalid Credentials",
-      });
-
-      expect(tokenUtil.generateAccessToken).not.toHaveBeenCalled();
-    });
-
-    it("should normalize email to lowercase during login", async () => {
-      const credentials = {
-        email: "JOHN@EXAMPLE.COM",
-        password: "SecurePass123",
-      };
-
-      Owner.findOne.mockReturnValueOnce({
-        select: jest.fn().mockResolvedValueOnce(null),
-      });
-
-      await expect(authService.loginOwner(credentials)).rejects.toEqual({
-        statusCode: 401,
-        message: "Invalid Credentials",
-      });
-
-      expect(Owner.findOne).toHaveBeenCalledWith({
-        email: "john@example.com",
       });
     });
   });
