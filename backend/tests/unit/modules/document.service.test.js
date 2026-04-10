@@ -33,9 +33,12 @@ jest.unstable_mockModule("../../../src/models/Unit.model.js", () => ({
 jest.unstable_mockModule("../../../src/models/Property.model.js", () => ({
   Property: {},
 }));
-jest.unstable_mockModule("../../../src/middleware/upload.middleware.js", () => ({
-  deleteFile: jest.fn(),
-}));
+jest.unstable_mockModule(
+  "../../../src/middleware/upload.middleware.js",
+  () => ({
+    deleteFile: jest.fn(),
+  }),
+);
 
 import * as documentService from "../../../src/modules/document/document.service.js";
 import UnitDocument from "../../../src/models/UnitDocument.model.js";

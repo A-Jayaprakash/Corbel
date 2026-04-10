@@ -1,110 +1,124 @@
-import * as propertyService from "../../../src/modules/property/property.service.js";
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+} from "@jest/globals";
 
-describe.skip("Property Service - Unit Tests", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+jest.unstable_mockModule("../../../src/models/Property.model.js", () => ({
+  Property: { find: jest.fn(), findOne: jest.fn(), create: jest.fn() },
+}));
+jest.unstable_mockModule("../../../src/models/Unit.model.js", () => ({
+  Unit: { countDocuments: jest.fn() },
+}));
 
+let createProperty,
+  getPropertiesByOwner,
+  updateProperty,
+  deleteProperty,
+  Property,
+  Unit;
+
+beforeAll(async () => {
+  ({ createProperty, getPropertiesByOwner, updateProperty, deleteProperty } =
+    await import("../../../src/modules/property/property.service.js"));
+  ({ Property } = await import("../../../src/models/Property.model.js"));
+  ({ Unit } = await import("../../../src/models/Unit.model.js"));
+});
+
+beforeEach(() => jest.clearAllMocks());
+
+describe("Property Service", () => {
   describe("createProperty", () => {
-    it("should successfully create a new property", async () => {
-      const propertyData = {
-        ownerId: "507f1f77bcf86cd799439011",
-        name: "Downtown Apartment Building",
-        address: "123 Main St, New York, NY",
-      };
+    it("should create and return a property", async () => {
+      const data = { ownerId: "o1", name: "Block A", address: "123 St" };
+      Property.create.mockResolvedValueOnce({ _id: "p1", ...data });
 
-      const createdProperty = {
-        _id: "607f1f77bcf86cd799439011",
-        ...propertyData,
-        createdAt: new Date(),
-      };
+      const result = await createProperty(data);
 
-      Property.create.mockResolvedValueOnce(createdProperty);
-
-      const result = await propertyService.createProperty(propertyData);
-
-      expect(Property.create).toHaveBeenCalledWith(propertyData);
-      expect(result).toEqual(createdProperty);
-    });
-
-    it("should handle creation errors", async () => {
-      const propertyData = {
-        ownerId: "507f1f77bcf86cd799439011",
-        name: "Downtown Apartment Building",
-        address: "123 Main St, New York, NY",
-      };
-
-      const error = new Error("Database error");
-      Property.create.mockRejectedValueOnce(error);
-
-      await expect(
-        propertyService.createProperty(propertyData),
-      ).rejects.toThrow(error);
+      expect(Property.create).toHaveBeenCalledWith(data);
+      expect(result._id).toBe("p1");
     });
   });
 
   describe("getPropertiesByOwner", () => {
-    it("should retrieve all properties for an owner", async () => {
-      const ownerId = "507f1f77bcf86cd799439011";
-      const mockProperties = [
-        {
-          _id: "607f1f77bcf86cd799439011",
-          ownerId,
-          name: "Property 1",
-          address: "Address 1",
-        },
-        {
-          _id: "607f1f77bcf86cd799439012",
-          ownerId,
-          name: "Property 2",
-          address: "Address 2",
-        },
-      ];
+    it("should return properties sorted by createdAt", async () => {
+      const props = [{ _id: "p1" }, { _id: "p2" }];
+      Property.find.mockReturnValueOnce({
+        sort: jest.fn().mockResolvedValueOnce(props),
+      });
 
-      Property.find.mockResolvedValueOnce(mockProperties);
+      const result = await getPropertiesByOwner({ ownerId: "o1" });
 
-      const result = await propertyService.getPropertiesByOwner({ ownerId });
+      expect(Property.find).toHaveBeenCalledWith({ ownerId: "o1" });
+      expect(result).toEqual(props);
+    });
+  });
 
-      expect(Property.find).toHaveBeenCalledWith({ ownerId });
-      expect(result).toEqual(mockProperties);
+  describe("updateProperty", () => {
+    it("should update and return the property", async () => {
+      const mockProp = {
+        _id: "p1",
+        name: "Old",
+        address: "Old Addr",
+        save: jest.fn(),
+      };
+      Property.findOne.mockResolvedValueOnce(mockProp);
+
+      const result = await updateProperty({
+        ownerId: "o1",
+        propertyId: "p1",
+        name: "New",
+      });
+
+      expect(mockProp.name).toBe("New");
+      expect(mockProp.save).toHaveBeenCalled();
+      expect(result).toBe(mockProp);
     });
 
-    it("should return empty array when owner has no properties", async () => {
-      const ownerId = "507f1f77bcf86cd799439011";
-      Property.find.mockResolvedValueOnce([]);
+    it("should throw 404 when property not found", async () => {
+      Property.findOne.mockResolvedValueOnce(null);
 
-      const result = await propertyService.getPropertiesByOwner({ ownerId });
-
-      expect(result).toEqual([]);
+      await expect(
+        updateProperty({ ownerId: "o1", propertyId: "p1", name: "New" }),
+      ).rejects.toEqual({ statusCode: 404, message: "PROPERTY_NOT_FOUND" });
     });
   });
 
   describe("deleteProperty", () => {
-    it("should successfully delete a property", async () => {
-      const ownerId = "507f1f77bcf86cd799439011";
-      const propertyId = "607f1f77bcf86cd799439011";
+    it("should delete property when no units exist", async () => {
+      const mockProp = { _id: "p1", deleteOne: jest.fn() };
+      Property.findOne.mockResolvedValueOnce(mockProp);
+      Unit.countDocuments.mockResolvedValueOnce(0);
 
-      Property.findByIdAndDelete.mockResolvedValueOnce({
-        _id: propertyId,
-        ownerId,
-      });
+      const result = await deleteProperty({ ownerId: "o1", propertyId: "p1" });
 
-      await propertyService.deleteProperty({ ownerId, propertyId });
-
-      expect(Property.findByIdAndDelete).toHaveBeenCalledWith(propertyId);
+      expect(mockProp.deleteOne).toHaveBeenCalled();
+      expect(result).toEqual({ success: true });
     });
 
-    it("should throw error when property not found", async () => {
-      const ownerId = "507f1f77bcf86cd799439011";
-      const propertyId = "nonexistent-id";
-
-      Property.findByIdAndDelete.mockResolvedValueOnce(null);
+    it("should throw 400 when property has units", async () => {
+      Property.findOne.mockResolvedValueOnce({ _id: "p1" });
+      Unit.countDocuments.mockResolvedValueOnce(2);
 
       await expect(
-        propertyService.deleteProperty({ ownerId, propertyId }),
+        deleteProperty({ ownerId: "o1", propertyId: "p1" }),
+      ).rejects.toEqual({
+        statusCode: 400,
+        message: "PROPERTY_HAS_UNITS",
+      });
+    });
+
+    it("should throw 404 when property not found", async () => {
+      Property.findOne.mockResolvedValueOnce(null);
+
+      await expect(
+        deleteProperty({ ownerId: "o1", propertyId: "p1" }),
       ).rejects.toEqual({
         statusCode: 404,
-        message: "Property not found",
+        message: "PROPERTY_NOT_FOUND",
       });
     });
   });

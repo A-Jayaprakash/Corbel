@@ -1,147 +1,100 @@
 import {
-  registerOwnerController,
-  loginOwnerController,
-} from "../../../src/modules/auth/auth.controller.js";
-import {
-  createMockRequest,
-  createMockResponse,
-  createMockNext,
-} from "../../utils/test-helpers.js";
+  jest,
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+} from "@jest/globals";
 
-describe.skip("Auth Controller - Unit Tests", () => {
-  let mockReq, mockRes, mockNext;
+jest.unstable_mockModule("../../../src/modules/auth/auth.service.js", () => ({
+  registerOwner: jest.fn(),
+  loginOwner: jest.fn(),
+}));
 
-  beforeEach(() => {
-    mockReq = createMockRequest();
-    mockRes = createMockResponse();
-    mockNext = createMockNext();
-    jest.clearAllMocks();
-  });
+let registerOwnerController, loginOwnerController, registerOwner, loginOwner;
 
+beforeAll(async () => {
+  ({ registerOwnerController, loginOwnerController } =
+    await import("../../../src/modules/auth/auth.controller.js"));
+  ({ registerOwner, loginOwner } =
+    await import("../../../src/modules/auth/auth.service.js"));
+});
+
+beforeEach(() => jest.clearAllMocks());
+
+const mockRes = () => {
+  const r = {};
+  r.status = jest.fn().mockReturnValue(r);
+  r.json = jest.fn().mockReturnValue(r);
+  return r;
+};
+
+describe("Auth Controller", () => {
   describe("registerOwnerController", () => {
-    it("should register owner successfully with valid data", async () => {
-      const ownerData = {
-        name: "John Doe",
-        email: "john@example.com",
-        password: "SecurePass123",
-        mobileNumber: "+1234567890",
+    it("should return 201 with message and data on success", async () => {
+      const req = {
+        body: { name: "J", email: "j@j.com", password: "p", mobileNumber: "1" },
       };
+      const res = mockRes();
+      const next = jest.fn();
+      registerOwner.mockResolvedValueOnce({ id: "id1", email: "j@j.com" });
 
-      mockReq.body = ownerData;
-      authService.registerOwner.mockResolvedValueOnce({
-        id: "507f1f77bcf86cd799439011",
-        email: ownerData.email,
-      });
+      await registerOwnerController(req, res, next);
 
-      await registerOwnerController(mockReq, mockRes, mockNext);
-
-      expect(authService.registerOwner).toHaveBeenCalledWith({
-        name: ownerData.name,
-        email: ownerData.email,
-        password: ownerData.password,
-        mobileNumber: ownerData.mobileNumber,
-      });
-
-      expect(mockRes.status).toHaveBeenCalledWith(201);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
         message: "Owner registered successfully",
-        data: {
-          id: "507f1f77bcf86cd799439011",
-          email: ownerData.email,
-        },
+        data: { id: "id1", email: "j@j.com" },
       });
+      expect(next).not.toHaveBeenCalled();
     });
 
-    it("should handle registration error when email already exists", async () => {
-      const ownerData = {
-        name: "John Doe",
-        email: "existing@example.com",
-        password: "SecurePass123",
-        mobileNumber: "+1234567890",
-      };
+    it("should call next with error on failure", async () => {
+      const req = { body: {} };
+      const res = mockRes();
+      const next = jest.fn();
+      const err = { statusCode: 409, message: "Email already exists" };
+      registerOwner.mockRejectedValueOnce(err);
 
-      mockReq.body = ownerData;
-      const error = new Error("Email already exists");
-      authService.registerOwner.mockRejectedValueOnce(error);
+      await registerOwnerController(req, res, next);
 
-      await registerOwnerController(mockReq, mockRes, mockNext);
-
-      expect(mockNext).toHaveBeenCalledWith(error);
-      expect(mockRes.json).not.toHaveBeenCalled();
-    });
-
-    it("should handle validation errors gracefully", async () => {
-      mockReq.body = {
-        name: "",
-        email: "invalid",
-        password: "",
-      };
-
-      const error = new Error("Validation failed");
-      authService.registerOwner.mockRejectedValueOnce(error);
-
-      await registerOwnerController(mockReq, mockRes, mockNext);
-
-      expect(mockNext).toHaveBeenCalledWith(error);
+      expect(next).toHaveBeenCalledWith(err);
     });
   });
 
   describe("loginOwnerController", () => {
-    it("should login owner successfully with valid credentials", async () => {
-      const credentials = {
-        email: "john@example.com",
-        password: "SecurePass123",
-      };
+    it("should return 200 with token on valid credentials", async () => {
+      const req = { body: { email: "j@j.com", password: "p" } };
+      const res = mockRes();
+      const next = jest.fn();
+      loginOwner.mockResolvedValueOnce({ accessToken: "tok", expiresIn: 3600 });
 
-      mockReq.body = credentials;
-      authService.loginOwner.mockResolvedValueOnce({
-        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        expiresIn: 3600,
-      });
+      await loginOwnerController(req, res, next);
 
-      await loginOwnerController(mockReq, mockRes, mockNext);
-
-      expect(authService.loginOwner).toHaveBeenCalledWith(credentials);
-
-      expect(mockRes.status).toHaveBeenCalledWith(200);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        access_token: "tok",
         token_type: "Bearer",
         expires_in: 3600,
       });
     });
 
-    it("should return 401 when credentials are invalid", async () => {
-      const credentials = {
-        email: "john@example.com",
-        password: "WrongPassword",
-      };
-
-      mockReq.body = credentials;
-      const error = {
+    it("should call next on login failure", async () => {
+      const req = { body: { email: "j@j.com", password: "wrong" } };
+      const res = mockRes();
+      const next = jest.fn();
+      loginOwner.mockRejectedValueOnce({
         statusCode: 401,
         message: "Invalid Credentials",
-      };
-      authService.loginOwner.mockRejectedValueOnce(error);
+      });
 
-      await loginOwnerController(mockReq, mockRes, mockNext);
+      await loginOwnerController(req, res, next);
 
-      expect(mockNext).toHaveBeenCalledWith(error);
-    });
-
-    it("should handle database errors during login", async () => {
-      const credentials = {
-        email: "john@example.com",
-        password: "SecurePass123",
-      };
-
-      mockReq.body = credentials;
-      const dbError = new Error("Database connection failed");
-      authService.loginOwner.mockRejectedValueOnce(dbError);
-
-      await loginOwnerController(mockReq, mockRes, mockNext);
-
-      expect(mockNext).toHaveBeenCalledWith(dbError);
+      expect(next).toHaveBeenCalledWith({
+        statusCode: 401,
+        message: "Invalid Credentials",
+      });
     });
   });
 });
