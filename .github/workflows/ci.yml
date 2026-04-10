@@ -162,11 +162,6 @@ jobs:
             const fs = require('fs');
             const unit = process.env.UNIT_RESULT;
             const integration = process.env.INTEGRATION_RESULT;
-        with:
-          script: |
-            const fs = require('fs');
-            const unit = needs['unit-tests'].result;
-            const integration = needs['integration-tests'].result;
             const icon = (r) => r === 'success' ? '✅' : r === 'skipped' ? '⏭️' : '❌';
 
             let body = `## CI Results\n\n`;
