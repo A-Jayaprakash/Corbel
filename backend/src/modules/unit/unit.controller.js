@@ -15,16 +15,14 @@ export const createUnitController = async (req, res, next) => {
       monthlyRent,
       advanceAmount,
     });
-    return res
-      .status(201)
-      .json({
-        id: unit._id,
-        unitName: unit.unitName,
-        monthlyRent: unit.monthlyRent,
-        advanceAmount: unit.advanceAmount,
-        status: unit.status,
-        createdAt: unit.createdAt,
-      });
+    return res.status(201).json({
+      id: unit._id,
+      unitName: unit.unitName,
+      monthlyRent: unit.monthlyRent,
+      advanceAmount: unit.advanceAmount,
+      status: unit.status,
+      createdAt: unit.createdAt,
+    });
   } catch (error) {
     next(error);
   }
@@ -36,17 +34,15 @@ export const getUnitsByPropertyController = async (req, res, next) => {
       ownerId: req.owner.id,
       propertyId: req.params.propertyId,
     });
-    return res
-      .status(200)
-      .json(
-        units.map((u) => ({
-          id: u._id,
-          unitName: u.unitName,
-          monthlyRent: u.monthlyRent,
-          advanceAmount: u.advanceAmount,
-          status: u.status,
-        })),
-      );
+    return res.status(200).json(
+      units.map((u) => ({
+        id: u._id,
+        unitName: u.unitName,
+        monthlyRent: u.monthlyRent,
+        advanceAmount: u.advanceAmount,
+        status: u.status,
+      })),
+    );
   } catch (error) {
     next(error);
   }
@@ -62,15 +58,13 @@ export const updateUnitController = async (req, res, next) => {
       monthlyRent,
       advanceAmount,
     });
-    return res
-      .status(200)
-      .json({
-        id: unit._id,
-        unitName: unit.unitName,
-        monthlyRent: unit.monthlyRent,
-        advanceAmount: unit.advanceAmount,
-        status: unit.status,
-      });
+    return res.status(200).json({
+      id: unit._id,
+      unitName: unit.unitName,
+      monthlyRent: unit.monthlyRent,
+      advanceAmount: unit.advanceAmount,
+      status: unit.status,
+    });
   } catch (error) {
     next(error);
   }

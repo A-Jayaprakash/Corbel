@@ -15,16 +15,14 @@ export const assignTenantToUnitController = async (req, res, next) => {
       phone,
       email,
     });
-    return res
-      .status(201)
-      .json({
-        id: tenant._id,
-        name: tenant.name,
-        phone: tenant.phone,
-        email: tenant.email,
-        status: tenant.status,
-        tenancyStartDate: tenant.tenancyStartDate,
-      });
+    return res.status(201).json({
+      id: tenant._id,
+      name: tenant.name,
+      phone: tenant.phone,
+      email: tenant.email,
+      status: tenant.status,
+      tenancyStartDate: tenant.tenancyStartDate,
+    });
   } catch (error) {
     next(error);
   }
@@ -37,16 +35,14 @@ export const getActiveTenantForUnitController = async (req, res, next) => {
       unitId: req.params.unitId,
     });
     if (!tenant) return res.status(200).json(null);
-    return res
-      .status(200)
-      .json({
-        id: tenant._id,
-        name: tenant.name,
-        phone: tenant.phone,
-        email: tenant.email,
-        status: tenant.status,
-        tenancyStartDate: tenant.tenancyStartDate,
-      });
+    return res.status(200).json({
+      id: tenant._id,
+      name: tenant.name,
+      phone: tenant.phone,
+      email: tenant.email,
+      status: tenant.status,
+      tenancyStartDate: tenant.tenancyStartDate,
+    });
   } catch (error) {
     next(error);
   }
@@ -62,15 +58,13 @@ export const updateTenantController = async (req, res, next) => {
       phone,
       email,
     });
-    return res
-      .status(200)
-      .json({
-        id: tenant._id,
-        name: tenant.name,
-        phone: tenant.phone,
-        email: tenant.email,
-        status: tenant.status,
-      });
+    return res.status(200).json({
+      id: tenant._id,
+      name: tenant.name,
+      phone: tenant.phone,
+      email: tenant.email,
+      status: tenant.status,
+    });
   } catch (error) {
     next(error);
   }

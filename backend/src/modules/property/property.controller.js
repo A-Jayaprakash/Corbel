@@ -13,14 +13,12 @@ export const createPropertyController = async (req, res, next) => {
       name,
       address,
     });
-    return res
-      .status(201)
-      .json({
-        id: property._id,
-        name: property.name,
-        address: property.address,
-        createdAt: property.createdAt,
-      });
+    return res.status(201).json({
+      id: property._id,
+      name: property.name,
+      address: property.address,
+      createdAt: property.createdAt,
+    });
   } catch (error) {
     next(error);
   }
@@ -29,15 +27,13 @@ export const createPropertyController = async (req, res, next) => {
 export const getPropertiesController = async (req, res, next) => {
   try {
     const properties = await getPropertiesByOwner({ ownerId: req.owner.id });
-    return res
-      .status(200)
-      .json(
-        properties.map((p) => ({
-          id: p._id,
-          name: p.name,
-          address: p.address,
-        })),
-      );
+    return res.status(200).json(
+      properties.map((p) => ({
+        id: p._id,
+        name: p.name,
+        address: p.address,
+      })),
+    );
   } catch (error) {
     next(error);
   }
@@ -52,13 +48,11 @@ export const updatePropertyController = async (req, res, next) => {
       name,
       address,
     });
-    return res
-      .status(200)
-      .json({
-        id: property._id,
-        name: property.name,
-        address: property.address,
-      });
+    return res.status(200).json({
+      id: property._id,
+      name: property.name,
+      address: property.address,
+    });
   } catch (error) {
     next(error);
   }
