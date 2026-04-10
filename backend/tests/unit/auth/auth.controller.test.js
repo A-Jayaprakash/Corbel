@@ -10,6 +10,7 @@ import {
 jest.unstable_mockModule("../../../src/modules/auth/auth.service.js", () => ({
   registerOwner: jest.fn(),
   loginOwner: jest.fn(),
+  refreshAccessToken: jest.fn(),
 }));
 
 let registerOwnerController, loginOwnerController, registerOwner, loginOwner;

@@ -16,6 +16,8 @@ jest.unstable_mockModule("../../../src/utils/password.util.js", () => ({
 }));
 jest.unstable_mockModule("../../../src/utils/token.util.js", () => ({
   generateAccessToken: jest.fn(),
+  generateRefreshToken: jest.fn(),
+  verifyRefreshToken: jest.fn(),
 }));
 
 let registerOwner,
@@ -121,13 +123,11 @@ describe("Auth Service", () => {
 
     it("should throw 401 when password is wrong", async () => {
       Owner.findOne.mockReturnValueOnce({
-        select: jest
-          .fn()
-          .mockResolvedValueOnce({
-            _id: "id1",
-            email: "x@x.com",
-            passwordHash: "h",
-          }),
+        select: jest.fn().mockResolvedValueOnce({
+          _id: "id1",
+          email: "x@x.com",
+          passwordHash: "h",
+        }),
       });
       comparePassword.mockResolvedValueOnce(false);
 

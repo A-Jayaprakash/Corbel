@@ -44,16 +44,20 @@ describe("Property Service", () => {
   });
 
   describe("getPropertiesByOwner", () => {
-    it("should return properties sorted by createdAt", async () => {
+    it("should return paginated properties", async () => {
       const props = [{ _id: "p1" }, { _id: "p2" }];
-      Property.find.mockReturnValueOnce({
-        sort: jest.fn().mockResolvedValueOnce(props),
-      });
+      const mockChain = { sort: jest.fn(), skip: jest.fn(), limit: jest.fn() };
+      mockChain.sort.mockReturnValue(mockChain);
+      mockChain.skip.mockReturnValue(mockChain);
+      mockChain.limit.mockResolvedValueOnce(props);
+      Property.find.mockReturnValueOnce(mockChain);
+      Property.countDocuments = jest.fn().mockResolvedValueOnce(2);
 
       const result = await getPropertiesByOwner({ ownerId: "o1" });
 
       expect(Property.find).toHaveBeenCalledWith({ ownerId: "o1" });
-      expect(result).toEqual(props);
+      expect(result.data).toEqual(props);
+      expect(result.meta.total).toBe(2);
     });
   });
 
