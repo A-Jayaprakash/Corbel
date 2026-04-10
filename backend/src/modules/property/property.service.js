@@ -1,8 +1,8 @@
-import { Property } from "../../models/Property.model";
-import { Unit } from "../../models/Unit.model";
+import { Property } from "../../models/Property.model.js";
+import { Unit } from "../../models/Unit.model.js";
 
 export const createProperty = async ({ ownerId, name, address }) => {
-  const property = await Property.createOne({
+  const property = await Property.create({
     ownerId,
     name,
     address,

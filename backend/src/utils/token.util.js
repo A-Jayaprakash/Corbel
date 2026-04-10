@@ -1,36 +1,28 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
-
-if (!JWT_SECRET) {
-  throw new Error("JWT is not defined in environment variables");
-}
-
-/**
- *
- * @param {Object} payload
- * @returns {string} jwt
- */
-
-export const generateAccessToken = (payload) => {
-  if (!payload) {
-    throw new Error("Payload is not received");
+const getSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is not set");
   }
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+  return secret;
 };
 
 /**
- *
- * @param {string} token
- * @returns {Object} decoded payload
+ * Generate a signed JWT access token
+ * @param {Object} payload - Data to embed (e.g. { owner_id, email })
+ * @returns {string} Signed JWT
  */
+export const generateAccessToken = (payload) => {
+  return jwt.sign(payload, getSecret(), { expiresIn: "1h" });
+};
 
+/**
+ * Verify and decode a JWT access token
+ * @param {string} token
+ * @returns {Object} Decoded payload
+ * @throws if token is invalid or expired
+ */
 export const verifyAccessToken = (token) => {
-  if (!token) {
-    throw new Error("JWT is required for verification");
-  }
-  return jwt.verify(token, JWT_SECRET);
+  return jwt.verify(token, getSecret());
 };
