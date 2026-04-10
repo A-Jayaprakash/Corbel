@@ -1,75 +1,85 @@
-import { createUnit, getUnitsByProperty, deleteUnit } from "./unit.service.js";
+import {
+  createUnit,
+  getUnitsByProperty,
+  updateUnit,
+  deleteUnit,
+} from "./unit.service.js";
 
-/**
- * Create Unit Controller
- */
 export const createUnitController = async (req, res, next) => {
   try {
-    const ownerId = req.owner.id;
-    const { propertyId } = req.params;
     const { unitName, monthlyRent, advanceAmount } = req.body;
-
     const unit = await createUnit({
-      ownerId,
-      propertyId,
+      ownerId: req.owner.id,
+      propertyId: req.params.propertyId,
       unitName,
       monthlyRent,
       advanceAmount,
     });
-
-    return res.status(201).json({
-      id: unit._id,
-      unitName: unit.unitName,
-      monthlyRent: unit.monthlyRent,
-      advanceAmount: unit.advanceAmount,
-      status: unit.status,
-      createdAt: unit.createdAt,
-    });
+    return res
+      .status(201)
+      .json({
+        id: unit._id,
+        unitName: unit.unitName,
+        monthlyRent: unit.monthlyRent,
+        advanceAmount: unit.advanceAmount,
+        status: unit.status,
+        createdAt: unit.createdAt,
+      });
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * Get Units Under Property Controller
- */
 export const getUnitsByPropertyController = async (req, res, next) => {
   try {
-    const ownerId = req.owner.id;
-    const { propertyId } = req.params;
-
     const units = await getUnitsByProperty({
-      ownerId,
-      propertyId,
+      ownerId: req.owner.id,
+      propertyId: req.params.propertyId,
     });
-
-    const response = units.map((unit) => ({
-      id: unit._id,
-      unitName: unit.unitName,
-      monthlyRent: unit.monthlyRent,
-      advanceAmount: unit.advanceAmount,
-      status: unit.status,
-    }));
-
-    return res.status(200).json(response);
+    return res
+      .status(200)
+      .json(
+        units.map((u) => ({
+          id: u._id,
+          unitName: u.unitName,
+          monthlyRent: u.monthlyRent,
+          advanceAmount: u.advanceAmount,
+          status: u.status,
+        })),
+      );
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * Delete Unit Controller
- */
+export const updateUnitController = async (req, res, next) => {
+  try {
+    const { unitName, monthlyRent, advanceAmount } = req.body;
+    const unit = await updateUnit({
+      ownerId: req.owner.id,
+      unitId: req.params.unitId,
+      unitName,
+      monthlyRent,
+      advanceAmount,
+    });
+    return res
+      .status(200)
+      .json({
+        id: unit._id,
+        unitName: unit.unitName,
+        monthlyRent: unit.monthlyRent,
+        advanceAmount: unit.advanceAmount,
+        status: unit.status,
+      });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deleteUnitController = async (req, res, next) => {
   try {
-    const ownerId = req.owner.id;
-    const { unitId } = req.params;
-
-    await deleteUnit({ ownerId, unitId });
-
-    return res.status(200).json({
-      message: "Unit deleted successfully",
-    });
+    await deleteUnit({ ownerId: req.owner.id, unitId: req.params.unitId });
+    return res.status(200).json({ message: "Unit deleted successfully" });
   } catch (error) {
     next(error);
   }
