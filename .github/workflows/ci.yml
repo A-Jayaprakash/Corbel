@@ -154,11 +154,14 @@ jobs:
 
       - name: Post PR comment
         uses: actions/github-script@v7
+        env:
+          UNIT_RESULT: ${{ needs.unit-tests.result }}
+          INTEGRATION_RESULT: ${{ needs.integration-tests.result }}
         with:
           script: |
             const fs = require('fs');
-            const unit = needs['unit-tests'].result;
-            const integration = needs['integration-tests'].result;
+            const unit = process.env.UNIT_RESULT;
+            const integration = process.env.INTEGRATION_RESULT;
             const icon = (r) => r === 'success' ? '✅' : r === 'skipped' ? '⏭️' : '❌';
 
             let body = `## CI Results\n\n`;
