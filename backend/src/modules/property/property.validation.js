@@ -7,7 +7,10 @@ export const createPropertyRules = [
     .withMessage("Property name is required")
     .isLength({ min: 2, max: 200 })
     .withMessage("Property name must be 2–200 characters"),
-  body("addressLine1").trim().notEmpty().withMessage("Address line 1 is required"),
+  body("addressLine1")
+    .trim()
+    .notEmpty()
+    .withMessage("Address line 1 is required"),
   body("addressLine2").optional().trim(),
   body("location").trim().notEmpty().withMessage("Location is required"),
   body("pincode")
