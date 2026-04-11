@@ -21,6 +21,21 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string;
+      errors?: Array<{ field: string; message: string }>;
+    };
+  };
+};
+
+function extractError(err: unknown, fallback: string): string {
+  const data = (err as ApiError)?.response?.data;
+  if (data?.errors?.length) return data.errors.map((e) => e.message).join(" · ");
+  return data?.message || fallback;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -36,11 +51,8 @@ export default function RegisterPage() {
     try {
       await authApi.register(data);
       router.push("/login?registered=1");
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        "Registration failed";
-      setError(msg);
+    } catch (err) {
+      setError(extractError(err, "Registration failed"));
     }
   };
 
@@ -53,15 +65,16 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {(["name", "email", "password", "mobileNumber"] as const).map((field) => (
             <div key={field}>
-              <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 {field === "mobileNumber"
                   ? "Mobile number (optional)"
                   : field === "name"
                     ? "Full name"
-                    : field}
+                    : field.charAt(0).toUpperCase() + field.slice(1)}
               </label>
               <input
                 {...register(field)}
+                suppressHydrationWarning
                 type={field === "password" ? "password" : field === "email" ? "email" : "text"}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />

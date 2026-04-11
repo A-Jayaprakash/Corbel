@@ -35,10 +35,9 @@ export default function LoginPage() {
       document.cookie = `access_token=${res.access_token}; path=/`;
       router.push("/dashboard");
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        "Invalid credentials";
-      setError(msg);
+      type ApiError = { response?: { data?: { message?: string; errors?: Array<{ message: string }> } } };
+      const data = (err as ApiError)?.response?.data;
+      setError(data?.errors?.length ? data.errors.map((e) => e.message).join(" · ") : data?.message || "Invalid credentials");
     }
   };
 
@@ -56,6 +55,7 @@ export default function LoginPage() {
               type="email"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="you@example.com"
+              suppressHydrationWarning
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
           </div>
@@ -67,6 +67,7 @@ export default function LoginPage() {
               type="password"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="••••••••"
+              suppressHydrationWarning
             />
             {errors.password && (
               <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
