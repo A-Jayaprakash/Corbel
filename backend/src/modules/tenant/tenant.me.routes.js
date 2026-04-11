@@ -8,10 +8,7 @@ import { Owner } from "../../models/Owner.model.js";
 
 const router = express.Router();
 
-/**
- * GET /api/v1/tenant/me
- * Tenant sees their own unit, property, and owner contact
- */
+// GET /api/v1/tenant/me — tenant sees own unit, property, and owner contact
 router.get(
   "/me",
   authMiddleware,
@@ -25,10 +22,11 @@ router.get(
         Owner.findById(req.user.ownerId).select("name email mobileNumber"),
       ]);
 
-      if (!tenant)
+      if (!tenant) {
         return res
           .status(404)
           .json({ statusCode: 404, message: "TENANT_NOT_FOUND" });
+      }
 
       return res.status(200).json({
         tenant: {
