@@ -2,12 +2,7 @@ import mongoose from "mongoose";
 
 const OwnerSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 2,
-    },
+    name: { type: String, required: true, trim: true, minlength: 2 },
     email: {
       type: String,
       required: true,
@@ -16,22 +11,15 @@ const OwnerSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
-    mobileNumber: {
+    mobileNumber: { type: String, unique: true, sparse: true, trim: true },
+    passwordHash: { type: String, required: true, select: false },
+    role: {
       type: String,
-      unique: true,
-      sparse: true,
-      trim: true,
-    },
-    passwordHash: {
-      type: String,
-      required: true,
-      select: false,
+      enum: ["owner", "admin"],
+      default: "owner",
     },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  },
+  { timestamps: true, versionKey: false },
 );
 
 export const Owner = mongoose.model("Owner", OwnerSchema);

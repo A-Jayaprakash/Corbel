@@ -1,9 +1,18 @@
 import { Property } from "../../models/Property.model.js";
 import { Unit } from "../../models/Unit.model.js";
 
-export const createProperty = async ({ ownerId, name, address }) => {
-  const property = await Property.create({ ownerId, name, address });
-  return property;
+const FIELDS = [
+  "name",
+  "ownerName",
+  "phone",
+  "addressLine1",
+  "addressLine2",
+  "location",
+  "pincode",
+];
+
+export const createProperty = async (payload) => {
+  return Property.create(payload);
 };
 
 export const getPropertiesByOwner = async ({
@@ -12,9 +21,11 @@ export const getPropertiesByOwner = async ({
   limit = 10,
 }) => {
   const skip = (page - 1) * limit;
+  // admin (ownerId === null) sees all properties
+  const filter = ownerId ? { ownerId } : {};
   const [data, total] = await Promise.all([
-    Property.find({ ownerId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
-    Property.countDocuments({ ownerId }),
+    Property.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Property.countDocuments(filter),
   ]);
   return {
     data,
@@ -22,28 +33,23 @@ export const getPropertiesByOwner = async ({
   };
 };
 
-export const updateProperty = async ({
-  ownerId,
-  propertyId,
-  name,
-  address,
-}) => {
-  const property = await Property.findOne({ _id: propertyId, ownerId });
+export const updateProperty = async ({ ownerId, propertyId, ...fields }) => {
+  const filter = ownerId ? { _id: propertyId, ownerId } : { _id: propertyId };
+  const property = await Property.findOne(filter);
   if (!property) throw { statusCode: 404, message: "PROPERTY_NOT_FOUND" };
-
-  if (name !== undefined) property.name = name;
-  if (address !== undefined) property.address = address;
+  FIELDS.forEach((f) => {
+    if (fields[f] !== undefined) property[f] = fields[f];
+  });
   await property.save();
   return property;
 };
 
 export const deleteProperty = async ({ ownerId, propertyId }) => {
-  const property = await Property.findOne({ _id: propertyId, ownerId });
+  const filter = ownerId ? { _id: propertyId, ownerId } : { _id: propertyId };
+  const property = await Property.findOne(filter);
   if (!property) throw { statusCode: 404, message: "PROPERTY_NOT_FOUND" };
-
   const unitCount = await Unit.countDocuments({ propertyId });
   if (unitCount > 0) throw { statusCode: 400, message: "PROPERTY_HAS_UNITS" };
-
   await property.deleteOne();
   return { success: true };
 };

@@ -3,29 +3,36 @@ import { verifyAccessToken } from "../../utils/token.util.js";
 export const authMiddleware = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        statusCode: 401,
-        message: "UNAUTHORIZED",
-        description: "Missing or invalid authorization header",
-      });
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ statusCode: 401, message: "UNAUTHORIZED" });
     }
 
-    const token = authHeader.split(" ")[1];
-    const decoded = verifyAccessToken(token);
+    const decoded = verifyAccessToken(authHeader.split(" ")[1]);
 
-    req.owner = {
-      id: decoded.owner_id || decoded.owner?._id,
+    req.user = {
+      id: decoded.user_id,
       email: decoded.email,
+      role: decoded.role || "owner",
+      unitId: decoded.unitId,
+      propertyId: decoded.propertyId,
+      ownerId: decoded.ownerId,
+    };
+
+    // Backwards compat: req.owner.id = the ownerId used to scope queries
+    // admin → null (services skip the filter), tenant → their ownerId, owner → their id
+    req.owner = {
+      id:
+        req.user.role === "admin"
+          ? null
+          : req.user.role === "tenant"
+            ? req.user.ownerId
+            : req.user.id,
+      email: req.user.email,
     };
 
     next();
-  } catch (error) {
-    return res.status(401).json({
-      statusCode: 401,
-      message: "UNAUTHORIZED",
-      description: "Invalid or expired token",
-    });
+  } catch {
+    return res.status(401).json({ statusCode: 401, message: "UNAUTHORIZED" });
   }
 };
 
