@@ -21,9 +21,11 @@ export const getPropertiesByOwner = async ({
   limit = 10,
 }) => {
   const skip = (page - 1) * limit;
+  // admin (ownerId === null) sees all properties
+  const filter = ownerId ? { ownerId } : {};
   const [data, total] = await Promise.all([
-    Property.find({ ownerId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
-    Property.countDocuments({ ownerId }),
+    Property.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Property.countDocuments(filter),
   ]);
   return {
     data,
@@ -32,9 +34,9 @@ export const getPropertiesByOwner = async ({
 };
 
 export const updateProperty = async ({ ownerId, propertyId, ...fields }) => {
-  const property = await Property.findOne({ _id: propertyId, ownerId });
+  const filter = ownerId ? { _id: propertyId, ownerId } : { _id: propertyId };
+  const property = await Property.findOne(filter);
   if (!property) throw { statusCode: 404, message: "PROPERTY_NOT_FOUND" };
-
   FIELDS.forEach((f) => {
     if (fields[f] !== undefined) property[f] = fields[f];
   });
@@ -43,12 +45,11 @@ export const updateProperty = async ({ ownerId, propertyId, ...fields }) => {
 };
 
 export const deleteProperty = async ({ ownerId, propertyId }) => {
-  const property = await Property.findOne({ _id: propertyId, ownerId });
+  const filter = ownerId ? { _id: propertyId, ownerId } : { _id: propertyId };
+  const property = await Property.findOne(filter);
   if (!property) throw { statusCode: 404, message: "PROPERTY_NOT_FOUND" };
-
   const unitCount = await Unit.countDocuments({ propertyId });
   if (unitCount > 0) throw { statusCode: 400, message: "PROPERTY_HAS_UNITS" };
-
   await property.deleteOne();
   return { success: true };
 };

@@ -2,18 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Building2, LayoutDashboard, LogOut } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 
-const nav = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/properties", label: "Properties", icon: Building2 },
-];
-
-export default function Sidebar() {
+export default function TenantSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout, owner, role } = useAuthStore();
+  const { logout, owner } = useAuthStore();
 
   const handleLogout = () => {
     logout();
@@ -27,33 +22,23 @@ export default function Sidebar() {
       <div className="px-6 py-5 border-b border-gray-800">
         <span className="text-white font-bold text-lg tracking-tight">Corbel</span>
         <div className="mt-1">
-          {role === "admin" ? (
-            <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded-full">Admin</span>
-          ) : (
-            <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">Owner</span>
-          )}
+          <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">Tenant</span>
         </div>
         {owner && <p className="text-gray-400 text-xs mt-1 truncate">{owner.email}</p>}
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {nav.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                active
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:bg-gray-800 hover:text-white"
-              }`}
-            >
-              <Icon size={16} />
-              {label}
-            </Link>
-          );
-        })}
+        <Link
+          href="/tenant"
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+            pathname === "/tenant"
+              ? "bg-blue-600 text-white"
+              : "text-gray-400 hover:bg-gray-800 hover:text-white"
+          }`}
+        >
+          <Home size={16} />
+          My Unit
+        </Link>
       </nav>
 
       <div className="px-3 py-4 border-t border-gray-800">

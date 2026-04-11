@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authApi } from "@/lib/queries";
-import { useAuthStore } from "@/store/auth.store";
+import { useAuthStore, Role } from "@/store/auth.store";
 import { useState } from "react";
 
 const schema = z.object({
@@ -16,9 +16,15 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+const roleRedirect: Record<Role, string> = {
+  owner: "/dashboard",
+  admin: "/dashboard",
+  tenant: "/tenant",
+};
+
 export default function LoginPage() {
   const router = useRouter();
-  const { setTokens } = useAuthStore();
+  const { setAuth } = useAuthStore();
   const [error, setError] = useState("");
 
   const {
@@ -31,13 +37,15 @@ export default function LoginPage() {
     setError("");
     try {
       const res = await authApi.login(data);
-      setTokens(res.access_token, res.refresh_token);
+      const role: Role = res.role || "owner";
+      setAuth(res.access_token, res.refresh_token, role);
       document.cookie = `access_token=${res.access_token}; path=/`;
-      router.push("/dashboard");
+      document.cookie = `user_role=${role}; path=/`;
+      router.push(roleRedirect[role]);
     } catch (err: unknown) {
       type ApiError = { response?: { data?: { message?: string; errors?: Array<{ message: string }> } } };
-      const data = (err as ApiError)?.response?.data;
-      setError(data?.errors?.length ? data.errors.map((e) => e.message).join(" · ") : data?.message || "Invalid credentials");
+      const d = (err as ApiError)?.response?.data;
+      setError(d?.errors?.length ? d.errors.map((e) => e.message).join(" · ") : d?.message || "Invalid credentials");
     }
   };
 
@@ -69,9 +77,7 @@ export default function LoginPage() {
               placeholder="••••••••"
               suppressHydrationWarning
             />
-            {errors.password && (
-              <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
-            )}
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
           </div>
 
           {error && (
