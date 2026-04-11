@@ -37,13 +37,11 @@ export const refreshTokenController = async (req, res, next) => {
   try {
     const { refresh_token } = req.body;
     const result = await refreshAccessToken({ refreshToken: refresh_token });
-    return res
-      .status(200)
-      .json({
-        access_token: result.accessToken,
-        token_type: "Bearer",
-        expires_in: result.expiresIn,
-      });
+    return res.status(200).json({
+      access_token: result.accessToken,
+      token_type: "Bearer",
+      expires_in: result.expiresIn,
+    });
   } catch (error) {
     next(error);
   }
