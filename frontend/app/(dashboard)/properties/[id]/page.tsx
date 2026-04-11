@@ -12,8 +12,8 @@ import Link from "next/link";
 
 const schema = z.object({
   unitName: z.string().min(1, "Unit name is required"),
-  monthlyRent: z.coerce.number().positive("Must be positive"),
-  advanceAmount: z.coerce.number().min(0, "Must be 0 or more"),
+  monthlyRent: z.string().refine((v) => Number(v) > 0, "Must be positive"),
+  advanceAmount: z.string().refine((v) => Number(v) >= 0, "Must be 0 or more"),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -33,7 +33,12 @@ export default function PropertyDetailPage() {
   });
 
   const create = useMutation({
-    mutationFn: (d: FormData) => unitApi.create(id, d),
+    mutationFn: (d: FormData) =>
+      unitApi.create(id, {
+        unitName: d.unitName,
+        monthlyRent: Number(d.monthlyRent),
+        advanceAmount: Number(d.advanceAmount),
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["units", id] });
       setShowForm(false);
