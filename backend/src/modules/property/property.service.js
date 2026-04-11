@@ -1,9 +1,18 @@
 import { Property } from "../../models/Property.model.js";
 import { Unit } from "../../models/Unit.model.js";
 
-export const createProperty = async ({ ownerId, name, address }) => {
-  const property = await Property.create({ ownerId, name, address });
-  return property;
+const FIELDS = [
+  "name",
+  "ownerName",
+  "phone",
+  "addressLine1",
+  "addressLine2",
+  "location",
+  "pincode",
+];
+
+export const createProperty = async (payload) => {
+  return Property.create(payload);
 };
 
 export const getPropertiesByOwner = async ({
@@ -22,17 +31,13 @@ export const getPropertiesByOwner = async ({
   };
 };
 
-export const updateProperty = async ({
-  ownerId,
-  propertyId,
-  name,
-  address,
-}) => {
+export const updateProperty = async ({ ownerId, propertyId, ...fields }) => {
   const property = await Property.findOne({ _id: propertyId, ownerId });
   if (!property) throw { statusCode: 404, message: "PROPERTY_NOT_FOUND" };
 
-  if (name !== undefined) property.name = name;
-  if (address !== undefined) property.address = address;
+  FIELDS.forEach((f) => {
+    if (fields[f] !== undefined) property[f] = fields[f];
+  });
   await property.save();
   return property;
 };

@@ -8,13 +8,23 @@ export const authApi = {
     api.post("/auth/login", data).then((r) => r.data),
 };
 
+export type PropertyPayload = {
+  name: string;
+  ownerName?: string;
+  phone?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  location?: string;
+  pincode?: string;
+};
+
 // Properties
 export const propertyApi = {
   list: (page = 1, limit = 10) =>
     api.get("/properties", { params: { page, limit } }).then((r) => r.data),
-  create: (data: { name: string; address: string }) =>
+  create: (data: PropertyPayload) =>
     api.post("/properties", data).then((r) => r.data),
-  update: (id: string, data: { name?: string; address?: string }) =>
+  update: (id: string, data: Partial<PropertyPayload>) =>
     api.patch(`/properties/${id}`, data).then((r) => r.data),
   delete: (id: string) =>
     api.delete(`/properties/${id}`).then((r) => r.data),

@@ -49,7 +49,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-2">
-            {properties.slice(0, 5).map((p: { id: string; name: string; address: string }) => (
+            {properties.slice(0, 5).map((p: { id: string; name: string; location?: string; addressLine1?: string }) => (
               <Link
                 key={p.id}
                 href={`/properties/${p.id}`}
@@ -59,7 +59,7 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600">
                     {p.name}
                   </p>
-                  <p className="text-xs text-gray-400">{p.address}</p>
+                  <p className="text-xs text-gray-400">{p.location || p.addressLine1 || "—"}</p>
                 </div>
                 <span className="text-gray-300 group-hover:text-blue-400 text-lg">&rsaquo;</span>
               </Link>
